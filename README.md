@@ -38,4 +38,52 @@ int main() {
 
 ## Setting up a Client
 
-Client support is not integrated terribly well yet.
+Clients support the same style of operations that servers do. Clients create _sockets_ used to interface with a server. A socket can take either one or two parameters; the first is always the IP of the server to connect to, and the (optional) second parameter is the callback when a message is received. This callback can be set later (to capture the socket) by the `Socket::setCallback` method.
+
+Clients also support the `Socket::send` method, which sends a string to the server
+
+## Sample App: Chat room
+
+Using these libraries, we can implement a simple chat room in less than 35 lines of code; most of it boilerplate.
+
+``` cpp
+// main.cpp
+#include "server.h"
+#include <string>
+#include <iostream>
+
+int main() {
+	Server S;
+	S.setCallback([&](std::string s) -> int {
+		// when a message is read, format it and send to all clients
+		auto first_space = s.find(' ');
+		S.broadcast(s.substr(0, first_space) + ">" + s.substr(first_space, s.length()));
+		std::cout << s << std::endl;
+	});
+	getchar();
+	return 0;	
+}	
+```
+
+``` cpp
+// client.cpp
+#include "socket.h"
+#include <string>
+#include <iostream>
+
+int main(int argc, char *argv[]) {
+	std::string ip(argv[1]);
+	std::string usr(argv[2]);
+	Socket S(ip);
+	S.setCallback([usr](std::string s) -> int {
+		if (s.substr(0, usr.length()) != usr) {	// if a message is received from someone else, display it
+			std::cout << s << std::endl;
+		}
+	});
+	std::string s;
+	while (getline(std::cin, s)) {				// continuously read messages; send to server
+		S.send(usr + " " + s);
+	}
+	return 0;
+}
+```
