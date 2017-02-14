@@ -16,6 +16,7 @@ int main() {
   Server S([](std::string s) -> int {
       std::cout << s << std::endl;
   });
+  getchar();  // wait for program termination
 }
 ```
 
@@ -31,6 +32,7 @@ int main() {
   S.setCallback([S](std::string s) -> int {     // Note here we can capture S to call the broadcast function
       S.broadcast(s);
   });
+  getchar();
 }
 ```
 
