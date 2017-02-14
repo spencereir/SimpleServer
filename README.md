@@ -3,7 +3,7 @@ Simple C++ server for Windows using Winsock 2 and threading
 
 ## Setting up a Server
 
-Servers are run by default on port 27015 (config to be added later). The Server class takes a parameter of type `int (*f)(std::string)`; a callback function that is passed received messages.
+Servers are run by default on port 27015 (config to be added later). The Server class takes a parameter of type `std::function<int(std::string)>`; a callback function that is passed received messages.
 
 Here is an example server that prints any message it receives.
 
