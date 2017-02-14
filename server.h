@@ -16,6 +16,7 @@
 #include <thread>
 #include <set>
 #include <map>
+#include <functional>
 
 #define DEFAULT_PORT "27015"
 
@@ -38,16 +39,19 @@ private:
 	std::map< int, std::thread > listeners;
 	int client_id = 0;
 
-	int (*callback)(std::string);
+	std::function<int (std::string)> callback;
 	void listener(Client c);
 	void acceptClients();
 
 public:
+	Server();
 	Server(int (*_callback)(std::string));
 	~Server();
 
 	int sendto(Client c, std::string s);
 	void broadcast(std::string s);
+
+	void setCallback(std::function< int (std::string)> _callback);
 };
 
 #endif
