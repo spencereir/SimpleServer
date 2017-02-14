@@ -19,7 +19,20 @@ int main() {
 }
 ```
 
-Additionally, `sendto` and `broadcast` functions are supported, for sending messages to targeted clients or all clients. It will be implemented soon to allow these functions to be called from within the callback.
+Additionally, `sendto` and `broadcast` functions are supported, for sending messages to targeted clients or all clients. Here is how you can access them within the callback function; we will build a server that echoes back messages to clients.
+
+``` cpp
+#include "server.h"
+#include <iostream>
+#include <string>
+
+int main() {
+  Server S;
+  S.setCallback([S](std::string s) -> int {     // Note here we can capture S to call the broadcast function
+      S.broadcast(s);
+  });
+}
+```
 
 ## Setting up a Client
 
