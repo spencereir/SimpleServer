@@ -2,12 +2,17 @@
 #include <string>
 #include <iostream>
 int main(int argc, char *argv[]) {
-	std::string s(argv[1]);
-	std::string msg;
-	for (int i = 2; i < argc; i++) {
-		msg += std::string(argv[i]) + " ";
+	std::string ip(argv[1]);
+	std::string usr(argv[2]);
+	Socket S(ip);
+	S.setCallback([usr](std::string s) -> int {
+		if (s.substr(0, usr.length()) != usr) {
+			std::cout << s << std::endl;
+		}
+	});
+	std::string s;
+	while (getline(std::cin, s)) {
+		S.send(usr + " " + s);
 	}
-	std::cout << s << std::endl;
-	Socket S(s, msg);
 	return 0;
 }

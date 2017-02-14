@@ -10,11 +10,13 @@ void Server::listener(Client c) {
 	        callback(std::string(recvbuf));	
 	    } else if (iResult == 0) {
 	        printf("Connection closing...\n");
+	        clients.erase(c);
+			closesocket(c.sock);
+			return;
 	    } else {
 	        printf("recv failed: %d\n", WSAGetLastError());
 			clients.erase(c);
 			closesocket(c.sock);
-			listeners.erase(c.id);
 	    }
 	} while (!done && iResult > 0);		
 }
