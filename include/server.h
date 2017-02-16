@@ -39,19 +39,19 @@ private:
 	std::map< int, std::thread > listeners;
 	int client_id = 0;
 
-	std::function<int (std::string)> callback;
+	std::function<int(std::string, Client)> callback;
 	void listener(Client c);
 	void acceptClients();
 
 public:
 	Server();
-	Server(int (*_callback)(std::string));
+	Server(std::function< int (std::string, Client)>);
 	~Server();
 
 	int sendto(Client c, std::string s);
 	void broadcast(std::string s);
 
-	void setCallback(std::function< int (std::string)> _callback);
+	void setCallback(std::function< int (std::string, Client)> _callback);
 };
 
 #endif

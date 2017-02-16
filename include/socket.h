@@ -32,7 +32,10 @@ public:
 	Socket(std::string ip, std::function<int(std::string)> _callback = nullptr);
 	~Socket();
 
-	void send(std::string msg);
+	int send(std::string msg);
+	bool closed() { return done; }
+	
+	void close();
 	void setCallback(std::function<int(std::string)> _callback);
 };
 

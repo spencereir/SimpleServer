@@ -1,10 +1,15 @@
 #include "socket.h"
 
-void Socket::send(std::string msg) {
+int Socket::send(std::string msg) {
+	if (done)
+		return SOCKET_ERROR;
+
 	int iResult = ::send(ConnectSocket, msg.c_str(), (int) msg.length(), 0);
 	if (iResult == SOCKET_ERROR) {
-	    printf("send failed: %d\n", WSAGetLastError());
+	    printf("send failed with error: %d\n, closing socket", WSAGetLastError());
+	    close();
 	}
+	return iResult;
 }
 
 void Socket::setCallback(std::function<int(std::string)> _callback)	 {
@@ -27,11 +32,18 @@ void Socket::listener() {
 	        	callbackStack.push_back(std::string(recvbuf));
 	        }
 	    } else if (iResult == 0) {
-	        printf("Connection closed\n");
+	        printf("connection with server closed, closing socket\n");
+	        close();
 	    } else {
-	        printf("recv failed: %d\n", WSAGetLastError());
+	        printf("recv failed with error %d, closing socket", WSAGetLastError());
+	        close();
 	    }
 	} while (!done);
+}
+
+void Socket::close() {
+	done = true;
+	listenerHandler.join();
 }
 
 Socket::Socket(std::string ip, std::function<int(std::string)> _callback) {	

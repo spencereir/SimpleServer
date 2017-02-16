@@ -7,7 +7,7 @@ void Server::listener(Client c) {
 	    iResult = recv(c.sock, recvbuf, 512, 0);
 	    if (iResult > 0) {
 	        printf("Bytes received: %d\n", iResult);
-	        callback(std::string(recvbuf));	
+	        callback(std::string(recvbuf), c);	
 	    } else if (iResult == 0) {
 	        printf("Connection closing...\n");
 	        clients.erase(c);
@@ -51,7 +51,7 @@ void Server::broadcast(std::string s) {
 	}
 }
 
-void Server::setCallback(std::function< int (std::string)> _callback) {
+void Server::setCallback(std::function<int(std::string, Client)> _callback) {
 	callback = _callback;
 }
 
@@ -105,7 +105,7 @@ Server::Server() {
 	clientAccepter.detach();
 }
 
-Server::Server(int (*_callback)(std::string)) : callback(_callback) {
+Server::Server(std::function< int (std::string, Client)> _callback) : callback(_callback) {
 	int iResult;
 
 	struct addrinfo *result = NULL, *ptr = NULL, hints;
