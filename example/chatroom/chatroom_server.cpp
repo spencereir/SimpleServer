@@ -4,7 +4,7 @@
 
 int main() {
 	Server S;
-	S.setCallback([&](std::string s) -> int {
+	S.setCallback([&](std::string s, Client c) -> int {
 		std::cout << s << std::endl;
 	});
 	getchar();

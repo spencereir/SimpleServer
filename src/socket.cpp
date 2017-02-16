@@ -35,15 +35,15 @@ void Socket::listener() {
 	        printf("connection with server closed, closing socket\n");
 	        close();
 	    } else {
-	        printf("recv failed with error %d, closing socket", WSAGetLastError());
+	        printf("recv failed with error %d, closing socket\n", WSAGetLastError());
 	        close();
+	        break;
 	    }
 	} while (!done);
 }
 
 void Socket::close() {
 	done = true;
-	listenerHandler.join();
 }
 
 Socket::Socket(std::string ip, std::function<int(std::string)> _callback) {	
@@ -54,6 +54,7 @@ Socket::Socket(std::string ip, std::function<int(std::string)> _callback) {
 	iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
 	if (iResult != 0) {
 	    printf("WSAStartup failed: %d\n", iResult);
+	    close();
 	}
 
 	struct addrinfo *result = NULL,
@@ -70,7 +71,8 @@ Socket::Socket(std::string ip, std::function<int(std::string)> _callback) {
 	iResult = getaddrinfo(ip.c_str(), DEFAULT_PORT, &hints, &result);
 	if (iResult != 0) {
 	    printf("getaddrinfo failed: %d\n", iResult);
-	    WSACleanup();
+	    close();
+	    return;
 	}
 
 
@@ -86,14 +88,15 @@ Socket::Socket(std::string ip, std::function<int(std::string)> _callback) {
 	if (ConnectSocket == INVALID_SOCKET) {
 	    printf("Error at socket(): %ld\n", WSAGetLastError());
 	    freeaddrinfo(result);
-	    WSACleanup();
+	    close();
+	    return;
 	}
 
 	// Connect to server.
 	iResult = connect( ConnectSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
 	if (iResult == SOCKET_ERROR) {
-	    closesocket(ConnectSocket);
-	    ConnectSocket = INVALID_SOCKET;
+		printf("Unable to connect to server!\n");
+	    close();
 	}
 
 	// Should really try the next address returned by getaddrinfo
@@ -104,15 +107,17 @@ Socket::Socket(std::string ip, std::function<int(std::string)> _callback) {
 
 	if (ConnectSocket == INVALID_SOCKET) {
 	    printf("Unable to connect to server!\n");
-	    WSACleanup();
+	    close();
 	}
 
-	listenerHandler = std::thread(listener, this);
+	if (!closed())
+		listenerHandler = std::thread(listener, this);
 };
 
 Socket::~Socket() {
 	done = true;
-	listenerHandler.join();
+	if (listenerHandler.joinable())
+		listenerHandler.join();
 	closesocket(ConnectSocket);
 	WSACleanup();
 };

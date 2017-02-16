@@ -1,4 +1,7 @@
 #include "server.h"
+#include <future>
+#include <thread>
+#include <chrono>
 
 void Server::listener(Client c) {
 	int iResult = 1;
@@ -22,15 +25,25 @@ void Server::listener(Client c) {
 }
 
 void Server::acceptClients() {
-	do {
-		SOCKET ClientSocket = INVALID_SOCKET;
-		ClientSocket = accept(ListenSocket, NULL, NULL);
 
-		if (ClientSocket != INVALID_SOCKET) {
-			Client newClient = {client_id++, ClientSocket};
-			clients.insert(newClient);
-			listeners[newClient.id] = std::thread(listener, this, newClient);
-			sendto(newClient, "Connection accepted");
+	do {
+
+		std::future<SOCKET> future = std::async(std::launch::async, [&]() -> SOCKET { 
+       		return accept(ListenSocket, NULL, NULL);
+    	}); 
+
+		std::future_status status = std::future_status::deferred;
+		while (!done && status != std::future_status::ready) {
+			status = future.wait_for(std::chrono::milliseconds(100));
+		}
+		if (status == std::future_status::ready) {
+			SOCKET ClientSocket = future.get();
+			if (ClientSocket != INVALID_SOCKET) {
+				Client newClient = {client_id++, ClientSocket};
+				clients.insert(newClient);
+				listeners[newClient.id] = std::thread(listener, this, newClient);
+				sendto(newClient, "Connection accepted");
+			}
 		}
 	} while (!done);
 }
@@ -151,15 +164,17 @@ Server::Server(std::function< int (std::string, Client)> _callback) : callback(_
 	}
 
 	printf("Starting thread\n");
-	clientAccepter = std::thread(acceptClients, this);		
-	clientAccepter.detach();
+	clientAccepter = std::thread(acceptClients, this);
 }
 
 Server::~Server() {
 	done = true;
+	printf("A\n");
 	clientAccepter.join();
+	printf("A\n");
 	for (auto c : clients) {
-		listeners[c.id].join();
+		if (listeners[c.id].joinable())
+			listeners[c.id].join();
 		closesocket(c.sock);
 	}
 	WSACleanup();
