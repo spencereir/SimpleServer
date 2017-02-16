@@ -12,7 +12,7 @@ int main(int argc, char *argv[]) {
 	});
 	std::string s;
 	while (getline(std::cin, s)) {
-		S.send(usr + " " + s);
+		S.send(usr + "> " + s);
 	}
 	return 0;
 }

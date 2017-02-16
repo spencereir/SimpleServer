@@ -1,15 +1,21 @@
-CC=g++
-CFLAGS=-I.
-DEPS = server.h socket.h
-LIBS=-lws2_32
+CC := g++
+SRCDIR := src
+INC := -I include
+CFLAGS := -g
+BUILDDIR := build
+TARGETDIR := bin
+TARGET := libsimpleserver.a
+SRCEXT := cpp
+SOURCES=$(wildcard $(SRCDIR)/*.$(SRCEXT))
+OBJECTS=$(patsubst $(SRCDIR)/%.cpp, $(BUILDDIR)/%.o, $(SOURCES))
 
-all: server client
-	
-server: server.o main.o
-	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+$(TARGETDIR)/$(TARGET): $(OBJECTS)
+	ar rvs $@ $(OBJECTS)
 
-client: client.o socket.o
-	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+$(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
+	$(CC) $(CFLAGS) $(INC) -c -o $@ $<
 
-%.o: %.cpp $(DEPS)
-	$(CC) -c -o $@ $< $(CFLAGS)
+clean:
+	-del /s $(TARGETDIR) $(BUILDDIR)
+
+.PHONY: clean

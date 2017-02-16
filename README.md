@@ -1,6 +1,12 @@
 # SimpleServer
 Simple C++ server for Windows using Winsock 2 and threading
 
+## Installing / Compiling
+
+Download the repository and run `make` to generate the `libsimpleserver.a` library.
+
+Compile by including the `include/` and `bin/` directories, as well as linking with `-lsimpleserver -lws2_32`
+
 ## Setting up a Server
 
 Servers are run by default on port 27015 (config to be added later). The Server class takes a parameter of type `std::function<int(std::string)>`; a callback function that is passed received messages.

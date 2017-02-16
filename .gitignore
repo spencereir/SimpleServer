@@ -1,3 +1,2 @@
-*.[oa]
-*.exe
-*.h.gch
+build
+bin
