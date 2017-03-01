@@ -42,7 +42,8 @@ private:
 	std::function<int(std::string, Client)> callback;
 	void listener(Client c);
 	void acceptClients();
-
+	bool open(SOCKET s);
+	
 public:
 	Server();
 	Server(std::function< int (std::string, Client)>);

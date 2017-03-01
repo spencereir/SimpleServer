@@ -8,5 +8,6 @@ int main() {
 		std::cout << s << std::endl;
 	});
 	getchar();
+	//S.~Server();
 	return 0;	
 }	
